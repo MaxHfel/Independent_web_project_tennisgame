@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pixel Tennis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: 'Press Start 2P', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 40px;
+    }
+    canvas {
+      /* The canvas is small (320x180) but displayed 3x bigger.*/
+      width: 960px;
+      height: 540px;
+      image-rendering: pixelated;
+      border: 4px solid #fff;
+    }
+  </style>
+</head>
+<body>
+  <h1>PIXEL TENNIS</h1>
+  <canvas id="game" width="320" height="180"></canvas>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    // ---------- KEYBOARD ----------
+    // Remember which keys are currently held down.
+    const keys = {};
+    document.addEventListener("keydown", (e) => keys[e.key] = true);
+    document.addEventListener("keyup",   (e) => keys[e.key] = false);
+
+    // ---------- GAME OBJECTS ----------
+    const player = { x: 20, y: 80, w: 6, h: 24, speed: 2 };
+
+    const ball = { x: 160, y: 90, size: 4, dx: 1.5, dy: 1 };
+
+    // TODO: add a second player on the right side
+    // TODO: add a score object, e.g. { left: 0, right: 0 }
+
+    // ---------- UPDATE (move things) ----------
+    function update() {
+      // Move player with W and S
+      if (keys["w"]) player.y -= player.speed;
+      if (keys["s"]) player.y += player.speed;
+
+      // Keep player on the screen
+      player.y = Math.max(0, Math.min(canvas.height - player.h, player.y));
+
+      // Move ball
+      ball.x += ball.dx;
+      ball.y += ball.dy;
+
+      // Bounce off top and bottom walls
+      if (ball.y <= 0 || ball.y + ball.size >= canvas.height) {
+        ball.dy *= -1;
+      }
+
+      // For now, bounce off left/right walls too so the ball stays on screen.
+      // TODO: replace this. If the ball goes past a player, the other side scores.
+      if (ball.x <= 0 || ball.x + ball.size >= canvas.width) {
+        ball.dx *= -1;
+      }
+
+      // TODO: collision! If the ball touches the player's racket, reverse ball.dx
+    }
+
+    // ---------- DRAW ----------
+    function draw() {
+      // Court
+      ctx.fillStyle = "#2e8b57";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Net (dashed line down the middle)
+      ctx.fillStyle = "#fff";
+      for (let y = 0; y < canvas.height; y += 8) {
+        ctx.fillRect(canvas.width / 2 - 1, y, 2, 4);
+      }
+
+      // Player
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(player.x, player.y, player.w, player.h);
+
+      // Ball
+      ctx.fillStyle = "#ffeb3b";
+      ctx.fillRect(ball.x, ball.y, ball.size, ball.size);
+
+      // TODO: draw the score with ctx.fillText(...)
+    }
+
+    // ---------- GAME LOOP ----------
+    function gameLoop() {
+      update();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+    gameLoop();
+  </script>
+</body>
+</html>
